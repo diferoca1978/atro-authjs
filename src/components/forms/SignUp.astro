@@ -83,14 +83,61 @@ import { Icon } from "astro-icon/components";
 </section>
 
 <script>
+  import { isInputError } from "astro:actions";
+  import { actions } from "astro:actions";
+  import Swal from "sweetalert2";
+
   const form = document.querySelector("form") as HTMLFormElement;
   const btnSubmit = document.querySelector("#btn-submit") as HTMLButtonElement;
   const btnGoogle = document.querySelector("#btn-google") as HTMLButtonElement;
 
-  form.addEventListener("submit", (e) => {
+  form.addEventListener("submit", async (e) => {
     e.preventDefault();
     btnSubmit.setAttribute("disabled", "disabled");
 
     const formData = new FormData(form);
+
+    const { error } = await actions.userRegister(formData);
+
+    if (error) {
+      if (isInputError(error)) {
+        if (error.fields.name) {
+          Swal.fire({
+            toast: true,
+            position: "center",
+            icon: "error",
+            title: "Something went wrong 🙈",
+            text: error.fields.name.join(", "),
+            showConfirmButton: false,
+            timer: 2500,
+          });
+        }
+        if (error.fields.email) {
+          Swal.fire({
+            toast: true,
+            position: "center",
+            icon: "error",
+            title: "Something went wrong 🙈",
+            text: error.fields.email.join(", "),
+            showConfirmButton: false,
+            timer: 2500,
+          });
+        }
+        if (error.fields.password) {
+          Swal.fire({
+            toast: true,
+            position: "center",
+            icon: "error",
+            title: "Something went wrong 🙈",
+            text: error.fields.password.join(", "),
+            showConfirmButton: false,
+            timer: 2500,
+          });
+        }
+      }
+
+      btnSubmit.removeAttribute("disabled");
+      return;
+    }
   });
 </script>

@@ -66,7 +66,7 @@ import { Icon } from "astro-icon/components";
         <button
           type="submit"
           id="btn-submit"
-          class="w-full flex justify-center items-center space-x-2 bg-gray-50 border border-gray-200 py-2 px-1 rounded-lg shadow-md hover:bg-gray-100 hover:border hover:border-gray-300 dark:bg-neutral-900 dark:text-white dark:border-gray-600 dark:hover:bg-neutral-800"
+          class="disabled w-full flex justify-center items-center space-x-2 bg-gray-50 border border-gray-200 py-2 px-1 rounded-lg shadow-md hover:bg-gray-100 hover:border hover:border-gray-300 dark:bg-neutral-900 dark:text-white dark:border-gray-600 dark:hover:bg-neutral-800"
         >
           <span class="font-medium">Sign in</span>
         </button>
@@ -76,7 +76,9 @@ import { Icon } from "astro-icon/components";
 </section>
 
 <script>
-  import { actions, isInputError } from "astro:actions";
+  import Swal from "sweetalert2";
+  const { signIn } = await import("auth-astro/client");
+  import { actions } from "astro:actions";
 
   const form = document.querySelector("form") as HTMLFormElement;
   const btnSubmit = document.querySelector("#btn-submit") as HTMLButtonElement;
@@ -88,13 +90,27 @@ import { Icon } from "astro-icon/components";
 
     const formData = new FormData(form);
 
-    const { error } = await actions.userLogin(formData);
+    //const { error } = await actions.userLogin(formData);
+    const resp = await signIn("credentials", {
+      email: formData.get("email") as string,
+      password: formData.get("password") as string,
+    });
 
-    if (isInputError(error)) {
-      if (error.fields.password) {
-        const message = error.fields.password.join(", ");
-        console.log(message);
-      }
+    if (error) {
+      Swal.fire({
+        toast: true,
+        position: "center",
+        icon: "error",
+        title: "Something went wrong 🙈",
+        text: "Invalid credentials",
+        showConfirmButton: false,
+        timer: 2500,
+      });
+      btnSubmit.removeAttribute("disabled");
+      return;
     }
+
+    // TODO: Redirect
+    window.location.replace("/");
   });
 </script>
